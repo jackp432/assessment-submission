@@ -133,6 +133,11 @@ export default function AssessmentResults({ instanceId }: Props) {
         </div>
       </div>
 
+      <div className="card api-data-card">
+        <h3>API Data</h3>
+        <pre>{JSON.stringify(results, null, 2)}</pre>
+      </div>
+
       {/* Element Scores */}
       {Object.keys(results.element_scores).length > 0 && (
         <div className="card element-scores-card">
