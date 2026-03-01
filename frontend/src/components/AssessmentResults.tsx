@@ -138,6 +138,38 @@ export default function AssessmentResults({ instanceId }: Props) {
         <pre>{JSON.stringify(results, null, 2)}</pre>
       </div>
 
+      {/* Questions and Answers */}
+      {results.element_scores && (
+            <div className="card questions-card">
+          <h3>Questions and Answers</h3>
+          {Object.values(results.element_scores).map((elementScore: any) => (
+            <div key={elementScore.element} className="element-questions">
+              <h4>Element {elementScore.element}</h4>
+              {elementScore.question_answers.map((qa: any) => (
+                <div key={qa.question_id} className="question-item">
+                  <h5>
+                    {qa.question_sequence}. {qa.question_title}
+                  </h5>
+                  {qa.is_reflection ? (
+                    <p>
+                      <strong>Reflection Prompt:</strong> {qa.reflection_prompt}
+                    </p>
+                  ) : qa.is_answered ? (
+                    <p>
+                      <strong>Answer:</strong> {qa.answer_text} (Score: {qa.answer_value}/{qa.max_score})
+                    </p>
+                  ) : (
+                    <p>
+                      <strong>Answer:</strong> Not answered
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Element Scores */}
       {Object.keys(results.element_scores).length > 0 && (
         <div className="card element-scores-card">
