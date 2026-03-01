@@ -58,9 +58,15 @@ export default function AssessmentResults({ instanceId }: Props) {
     fetchResults()
   }, [instanceId])
 
-  if (loading) {
-    return <div className="loading">Loading results...</div>
-  }
+if (loading) {
+  return (
+    <div className="loading-bar-container">
+      <div className="loading-bar">
+        <div className="loading-progress"></div>
+      </div>
+    </div>
+  );
+}
 
   if (error) {
     return <div className="error">Error: {error}</div>
@@ -154,10 +160,10 @@ export default function AssessmentResults({ instanceId }: Props) {
         </div>
       </div>
 
-      <div className="card api-data-card">
+      {/* <div className="card api-data-card">
         <h3>API Data</h3>
         <pre>{JSON.stringify(results, null, 2)}</pre>
-      </div>
+      </div> */}
 
       {/* Questions and Answers */}
       {results.element_scores && (
