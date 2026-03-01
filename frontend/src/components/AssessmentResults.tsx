@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AssessmentResults.css'
 import ResultsBarChart from './ResultsBarChart'
+import ScoreRadialChart from './ScoreRadialChart';
 
 interface AssessmentResults {
   instance: {
@@ -141,9 +142,8 @@ export default function AssessmentResults({ instanceId }: Props) {
       <div className="card score-card">
         <h3>Overall Score</h3>
         <div className="score-display">
-          <div
-            className="score-percentage"
-            style={{ color: getScoreColor(results.scores.percentage) }}
+          <ScoreRadialChart percentage={results.scores.percentage} />
+          <div className="score-percentage" style={{ color: getScoreColor(results.scores.percentage) }}
           >
             {results.scores.percentage}%
           </div>
