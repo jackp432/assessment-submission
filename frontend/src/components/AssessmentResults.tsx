@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './AssessmentResults.css'
+import ResultsBarChart from './ResultsBarChart'
 
 interface AssessmentResults {
   instance: {
@@ -73,6 +74,26 @@ export default function AssessmentResults({ instanceId }: Props) {
     if (percentage >= 60) return '#f39c12'
     return '#e74c3c'
   }
+
+  const elementKey = Object.keys(results.element_scores ?? {})[0]
+
+  // Build data for the bar chart
+  const questionChartData =
+  // continue if the element and its questions exist
+    elementKey && results.element_scores[elementKey]?.question_answers
+      ? results.element_scores[elementKey].question_answers
+          .filter((q: any) => !q.is_reflection) // Ive done a check to remove reflections as they dont have scores and was causing the chart to give incorrect values
+          // Convert each question into chart format
+          .map((q: any) => ({
+            // Label for the X axis (Q1, Q2, etc.)
+            name: `Q${q.question_sequence}`,
+            // Use answer score if answered, otherwise 0
+            value: q.is_answered && typeof q.answer_value === "number"
+              ? q.answer_value
+              : 0,
+          }))
+          // If no valid data, return empty array
+      : []
 
   return (
     <div className="assessment-results">
@@ -174,11 +195,21 @@ export default function AssessmentResults({ instanceId }: Props) {
       {Object.keys(results.element_scores).length > 0 && (
         <div className="card element-scores-card">
           <h3>Scores by Element</h3>
+
+
+          {questionChartData.length > 0 && (
+  <ResultsBarChart
+    data={questionChartData}
+    barColor="#3498db"
+  />
+)}
           <div className="element-scores">
             {Object.values(results.element_scores).map((elementScore: any) => (
               <div key={elementScore.element} className="element-score">
                 <div className="element-header">
                   <span className="element-name">Element {elementScore.element}</span>
+
+                  
                   <span
                     className="element-percentage"
                     style={{ color: getScoreColor(elementScore.scores.percentage) }}
