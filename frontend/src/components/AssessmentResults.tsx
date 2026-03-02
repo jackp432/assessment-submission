@@ -1,106 +1,99 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import './AssessmentResults.css'
-import ResultsBarChart from './ResultsBarChart'
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import './AssessmentResults.css';
+import ResultsBarChart from './ResultsBarChart';
 import ScoreRadialChart from './ScoreRadialChart';
 
 interface AssessmentResults {
   instance: {
-    id: string
-    completed: boolean
-    completed_at: string | null
-    element: string
-  }
-  total_questions: number
-  answered_questions: number
-  completion_percentage: number
+    id: string;
+    completed: boolean;
+    completed_at: string | null;
+    element: string;
+  };
+  total_questions: number;
+  answered_questions: number;
+  completion_percentage: number;
   scores: {
-    total_score: number
-    max_score: number
-    percentage: number
-  }
-  element_scores: Record<string, any>
+    total_score: number;
+    max_score: number;
+    percentage: number;
+  };
+  element_scores: Record<string, any>;
   insights: Array<{
-    type: string
-    message: string
-    positive: boolean
-  }>
+    type: string;
+    message: string;
+    positive: boolean;
+  }>;
 }
 
 interface Props {
-  instanceId: string
+  instanceId: string;
 }
 
 export default function AssessmentResults({ instanceId }: Props) {
-  const [results, setResults] = useState<AssessmentResults | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [results, setResults] = useState<AssessmentResults | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    if (!instanceId) return
+    if (!instanceId) return;
 
     const fetchResults = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL || 'http://localhost:8002'}/api/assessment/results/${instanceId}`
-        )
-        setResults(response.data)
+        );
+        setResults(response.data);
       } catch (err: any) {
-        setError(err.response?.data?.error || 'Failed to load assessment results')
+        setError(err.response?.data?.error || 'Failed to load assessment results');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchResults()
-  }, [instanceId])
+    fetchResults();
+  }, [instanceId]);
 
-if (loading) {
-  return (
-    <div className="loading-bar-container">
-      <div className="loading-bar">
-        <div className="loading-progress"></div>
+  if (loading) {
+    return (
+      <div className="loading-bar-container">
+        <div className="loading-bar">
+          <div className="loading-progress"></div>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   if (error) {
-    return <div className="error">Error: {error}</div>
+    return <div className="error">Error: {error}</div>;
   }
 
   if (!results) {
-    return <div className="empty">No results to display</div>
+    return <div className="empty">No results to display</div>;
   }
 
   const getScoreColor = (percentage: number) => {
-    if (percentage >= 80) return '#27ae60'
-    if (percentage >= 60) return '#f39c12'
-    return '#e74c3c'
-  }
+    if (percentage >= 80) return '#27ae60';
+    if (percentage >= 60) return '#f39c12';
+    return '#e74c3c';
+  };
 
-  const elementKey = Object.keys(results.element_scores ?? {})[0]
+  const elementKey = Object.keys(results.element_scores ?? {})[0];
 
-  // Build data for the bar chart
   const questionChartData =
-  // continue if the element and its questions exist
     elementKey && results.element_scores[elementKey]?.question_answers
       ? results.element_scores[elementKey].question_answers
-          .filter((q: any) => !q.is_reflection) // Ive done a check to remove reflections as they dont have scores and was causing the chart to give incorrect values
-          // Convert each question into chart format
+          .filter((q: any) => !q.is_reflection)
           .map((q: any) => ({
-            // Label for the X axis (Q1, Q2, etc.)
             name: `Q${q.question_sequence}`,
-            // Use answer score if answered, otherwise 0
-            value: q.is_answered && typeof q.answer_value === "number"
-              ? q.answer_value
-              : 0,
+            value: q.is_answered && typeof q.answer_value === 'number' ? q.answer_value : 0,
           }))
-          // If no valid data, return empty array
-      : []
+      : [];
 
   return (
     <div className="assessment-results">
@@ -109,19 +102,11 @@ if (loading) {
         <p className="instance-id">Instance: {results.instance.id}</p>
       </div>
 
-      {/* Progress Card */}
       <div className="card progress-card">
         <h3>Progress</h3>
         <div className="progress-circle">
           <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle
-              cx="60"
-              cy="60"
-              r="54"
-              fill="none"
-              stroke="#e0e0e0"
-              strokeWidth="12"
-            />
+            <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" strokeWidth="12" />
             <circle
               cx="60"
               cy="60"
@@ -140,82 +125,126 @@ if (loading) {
           </div>
         </div>
         <div className="progress-details">
-          <p>{results.answered_questions} of {results.total_questions} questions answered</p>
+          <p>
+            {results.answered_questions} of {results.total_questions} questions answered
+          </p>
         </div>
       </div>
 
-      {/* Score Card */}
       <div className="card score-card">
         <h3>Overall Score</h3>
         <div className="score-display">
           <ScoreRadialChart percentage={results.scores.percentage} />
-          <div className="score-percentage" style={{ color: getScoreColor(results.scores.percentage) }}
+          <div
+            className="score-percentage"
+            style={{ color: getScoreColor(results.scores.percentage) }}
           >
             {results.scores.percentage}%
           </div>
           <div className="score-details">
-            <p>{results.scores.total_score} / {results.scores.max_score} points</p>
+            <p>
+              {results.scores.total_score} / {results.scores.max_score} points
+            </p>
             <p className="score-note">Normalized from 1-5 scale</p>
           </div>
         </div>
       </div>
 
-      {/* <div className="card api-data-card">
-        <h3>API Data</h3>
-        <pre>{JSON.stringify(results, null, 2)}</pre>
-      </div> */}
-
-      {/* Questions and Answers */}
+    {/* Questions and Answers */}
       {results.element_scores && (
-            <div className="card questions-card">
+        <div className="card questions-card">
           <h3>Questions and Answers</h3>
+            {/* Calculate counts */}
+            <div className="filter-buttons">
+              <button
+                className={filter === 'All' ? 'active' : ''}
+                onClick={() => setFilter('All')}
+              >
+                All (
+                {Object.values(results.element_scores).reduce(
+                  (total: number, elementScore: any) =>
+                    total + elementScore.question_answers.length,
+                  0
+                )}
+                )
+              </button>
+              <button
+                className={filter === 'Answered' ? 'active' : ''}
+                onClick={() => setFilter('Answered')}
+              >
+                Answered (
+                {Object.values(results.element_scores).reduce(
+                  (total: number, elementScore: any) =>
+                    total +
+                    elementScore.question_answers.filter((qa: any) => qa.is_answered)
+                      .length,
+                  0
+                )}
+                )
+              </button>
+              <button
+                className={filter === 'Not Answered' ? 'active' : ''}
+                onClick={() => setFilter('Not Answered')}
+              >
+                Not Answered (
+                {Object.values(results.element_scores).reduce(
+                  (total: number, elementScore: any) =>
+                    total +
+                    elementScore.question_answers.filter((qa: any) => !qa.is_answered)
+                      .length,
+                  0
+                )}
+                )
+              </button>
+            </div>
+
+
           {Object.values(results.element_scores).map((elementScore: any) => (
             <div key={elementScore.element} className="element-questions">
               <h4>Element {elementScore.element}</h4>
-              {elementScore.question_answers.map((qa: any) => (
-                <div key={qa.question_id} className="question-item">
-                  <h5>
-                    {qa.question_sequence}. {qa.question_title}
-                  </h5>
-                  {qa.is_reflection ? (
-                    <p>
-                      <strong>Reflection Prompt:</strong> {qa.reflection_prompt}
-                    </p>
-                  ) : qa.is_answered ? (
-                    <p>
-                      <strong>Answer:</strong> {qa.answer_text} (Score: {qa.answer_value}/{qa.max_score})
-                    </p>
-                  ) : (
-                    <p>
-                      <strong>Answer:</strong> Not answered
-                    </p>
-                  )}
-                </div>
-              ))}
+              {elementScore.question_answers
+                .filter((qa: any) => {
+                  if (filter === 'Answered') return qa.is_answered;
+                  if (filter === 'Not Answered') return !qa.is_answered;
+                  return true;
+                })
+                .map((qa: any) => (
+                  <div key={qa.question_id} className="question-item">
+                    <h5>
+                      {qa.question_sequence}. {qa.question_title}
+                    </h5>
+                    {qa.is_reflection ? (
+                      <p>
+                        <strong>Reflection Prompt:</strong> {qa.reflection_prompt}
+                      </p>
+                    ) : qa.is_answered ? (
+                      <p>
+                        <strong>Answer:</strong> {qa.answer_text} (Score: {qa.answer_value}/
+                        {qa.max_score})
+                      </p>
+                    ) : (
+                      <p>
+                        <strong>Answer:</strong> Not answered
+                      </p>
+                    )}
+                  </div>
+                ))}
             </div>
           ))}
         </div>
       )}
 
-      {/* Element Scores */}
       {Object.keys(results.element_scores).length > 0 && (
         <div className="card element-scores-card">
           <h3>Scores by Element</h3>
-
-
           {questionChartData.length > 0 && (
-  <ResultsBarChart
-    data={questionChartData}
-    barColor="#3498db"
-  />
-)}
+            <ResultsBarChart data={questionChartData} barColor="#3498db" />
+          )}
           <div className="element-scores">
             {Object.values(results.element_scores).map((elementScore: any) => (
               <div key={elementScore.element} className="element-score">
                 <div className="element-header">
                   <span className="element-name">Element {elementScore.element}</span>
-
-                  
                   <span
                     className="element-percentage"
                     style={{ color: getScoreColor(elementScore.scores.percentage) }}
@@ -228,13 +257,17 @@ if (loading) {
                     className="element-progress-fill"
                     style={{
                       width: `${elementScore.completion_percentage}%`,
-                      backgroundColor: getScoreColor(elementScore.scores.percentage)
+                      backgroundColor: getScoreColor(elementScore.scores.percentage),
                     }}
                   />
                 </div>
                 <div className="element-details">
-                  <span>{elementScore.answered_questions} / {elementScore.total_questions} answered</span>
-                  <span>{elementScore.scores.total_score} / {elementScore.scores.max_score} points</span>
+                  <span>
+                    {elementScore.answered_questions} / {elementScore.total_questions} answered
+                  </span>
+                  <span>
+                    {elementScore.scores.total_score} / {elementScore.scores.max_score} points
+                  </span>
                 </div>
               </div>
             ))}
@@ -242,7 +275,6 @@ if (loading) {
         </div>
       )}
 
-      {/* Insights */}
       {results.insights.length > 0 && (
         <div className="card insights-card">
           <h3>Insights</h3>
@@ -260,5 +292,5 @@ if (loading) {
         </div>
       )}
     </div>
-  )
+  );
 }
