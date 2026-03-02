@@ -42,7 +42,7 @@ const ScoreRadialChart: React.FC<ScoreRadialChartProps> = ({ percentage }) => {
         dominantBaseline="middle"
         style={{ fontSize: "20px", fontWeight: "bold" }}
       >
-        {percentage}%
+
       </text>
     </PieChart>
   );

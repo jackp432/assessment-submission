@@ -7,12 +7,6 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Assessment Results System</h1>
-        <p>Technical Interview Task</p>
-      </header>
-
-      <main className="app-main">
         <div className="instance-selector">
           <label htmlFor="instance-id">Assessment Instance ID:</label>
           <input
@@ -23,7 +17,7 @@ function App() {
             placeholder="Enter instance ID"
           />
         </div>
-
+      <main className="app-main">
         <AssessmentResults instanceId={instanceId} />
       </main>
     </div>
